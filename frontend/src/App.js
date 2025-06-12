@@ -3,16 +3,19 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import LoginRegister from './pages/LoginRegister';
 import Home from './pages/Home';
 import './App.css';
+import Navbar from './components/Navbar';
 
 function App() {
   return (
-    <Router>
+    <div>
+      <Navbar />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/auth" element={<LoginRegister />} />
       </Routes>
-    </Router>
+    </div>
   );
 }
+
 
 export default App;
