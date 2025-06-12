@@ -3,34 +3,13 @@ import axios from 'axios';
 import './RecipeFeed.css';
 import Select from 'react-select';
 
-const tagOptions = [
-  { value: 'vegan', label: 'Vegan' },
-  { value: 'keto', label: 'Keto' },
-  { value: 'gluten-free', label: 'Gluten-Free' },
-  { value: 'dessert', label: 'Dessert' },
-  { value: 'quick', label: 'Quick' }
-];
-
-const [selectedTags, setSelectedTags] = useState([]);
-
-<div style={{ marginBottom: '20px' }}>
-  <label style={{ color: '#fff' }}>Filter by Tags:</label>
-  <Select
-    options={tagOptions}
-    isMulti
-    value={selectedTags}
-    onChange={setSelectedTags}
-    className="basic-multi-select"
-    classNamePrefix="select"
-    placeholder="Select tags"
-  />
-</div>
-
-
-
 const RecipeFeed = () => {
   const [recipes, setRecipes] = useState([]);
+  const [filteredRecipes, setFilteredRecipes] = useState([]);
   const [commentText, setCommentText] = useState({});
+  const [selectedTags, setSelectedTags] = useState([]);
+  const [tagOptions, setTagOptions] = useState([]);
+
   const token = localStorage.getItem('token');
 
   useEffect(() => {
@@ -38,6 +17,15 @@ const RecipeFeed = () => {
       try {
         const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/recipes`);
         setRecipes(res.data);
+        setFilteredRecipes(res.data);
+
+        // Extract all unique tags
+        const tagSet = new Set();
+        res.data.forEach((recipe) => {
+          recipe.tags.forEach((tag) => tagSet.add(tag));
+        });
+        const options = Array.from(tagSet).map(tag => ({ value: tag, label: tag }));
+        setTagOptions(options);
       } catch (err) {
         console.error(err);
         alert('Failed to load recipes');
@@ -46,6 +34,18 @@ const RecipeFeed = () => {
 
     fetchRecipes();
   }, []);
+
+  // Filter recipes when tags change
+  useEffect(() => {
+    if (selectedTags.length === 0) {
+      setFilteredRecipes(recipes);
+    } else {
+      const filtered = recipes.filter(recipe =>
+        selectedTags.every(tag => recipe.tags.includes(tag.value))
+      );
+      setFilteredRecipes(filtered);
+    }
+  }, [selectedTags, recipes]);
 
   const handleFavorite = async (recipeId) => {
     try {
@@ -69,7 +69,8 @@ const RecipeFeed = () => {
       );
       alert('Comment added!');
       setCommentText(prev => ({ ...prev, [recipeId]: '' }));
-      // refresh comments
+
+      // Refresh all recipes
       const updated = await axios.get(`${process.env.REACT_APP_API_URL}/api/recipes`);
       setRecipes(updated.data);
     } catch (err) {
@@ -80,9 +81,24 @@ const RecipeFeed = () => {
   return (
     <div className="feed-container">
       <h2>Recipe Feed</h2>
-      {recipes.length === 0 && <p>No recipes posted yet.</p>}
 
-      {recipes.map((recipe) => (
+      {/* Tag Filter UI */}
+      <div style={{ marginBottom: '20px' }}>
+        <label style={{ color: '#fff', marginBottom: '5px', display: 'block' }}>Filter by Tags:</label>
+        <Select
+          options={tagOptions}
+          isMulti
+          value={selectedTags}
+          onChange={setSelectedTags}
+          className="basic-multi-select"
+          classNamePrefix="select"
+          placeholder="Select tags"
+        />
+      </div>
+
+      {filteredRecipes.length === 0 && <p>No recipes match the selected tags.</p>}
+
+      {filteredRecipes.map((recipe) => (
         <div className="recipe-card" key={recipe._id}>
           <img src={recipe.imageUrl} alt={recipe.title} />
           <h3>{recipe.title}</h3>
