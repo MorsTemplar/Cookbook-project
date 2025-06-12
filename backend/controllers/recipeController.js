@@ -139,8 +139,12 @@ const addComment = asyncHandler(async (req, res) => {
 
 module.exports = {
   createRecipe,
-  getAllRecipes,
+  getRecipes,
   getRecipeById,
   updateRecipe,
   deleteRecipe,
+  saveRecipe,
+  unsaveRecipe,
+  addComment,
 };
+
