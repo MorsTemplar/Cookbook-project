@@ -1,6 +1,4 @@
 const express = require('express');
-
-const upload = require('../middleware/uploadMiddleware');
 const router = express.Router();
 const {
   createRecipe,
@@ -8,13 +6,12 @@ const {
   getRecipeById,
   updateRecipe,
   deleteRecipe,
+  saveRecipe,
+  unsaveRecipe,
+  addComment,
 } = require('../controllers/recipeController');
-const { protect } = require('../middleware/authMiddleware');
 
-// Upload image to Cloudinary
-router.post('/upload', protect, upload.single('image'), (req, res) => {
-  res.json({ imageUrl: req.file.path });
-});
+const { protect } = require('../middleware/authMiddleware');
 
 // Public routes
 router.get('/', getAllRecipes);
@@ -25,9 +22,11 @@ router.post('/', protect, createRecipe);
 router.put('/:id', protect, updateRecipe);
 router.delete('/:id', protect, deleteRecipe);
 
+// Save / Unsave
 router.post('/:id/save', protect, saveRecipe);
-router.post('/:id/unsave', protect, unsaveRecipe);
-router.post('/:id/comment', protect, addComment);
+router.delete('/:id/save', protect, unsaveRecipe);
 
+// Comments
+router.post('/:id/comments', protect, addComment);
 
 module.exports = router;
