@@ -1,6 +1,32 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import './RecipeFeed.css';
+import Select from 'react-select';
+
+const tagOptions = [
+  { value: 'vegan', label: 'Vegan' },
+  { value: 'keto', label: 'Keto' },
+  { value: 'gluten-free', label: 'Gluten-Free' },
+  { value: 'dessert', label: 'Dessert' },
+  { value: 'quick', label: 'Quick' }
+];
+
+const [selectedTags, setSelectedTags] = useState([]);
+
+<div style={{ marginBottom: '20px' }}>
+  <label style={{ color: '#fff' }}>Filter by Tags:</label>
+  <Select
+    options={tagOptions}
+    isMulti
+    value={selectedTags}
+    onChange={setSelectedTags}
+    className="basic-multi-select"
+    classNamePrefix="select"
+    placeholder="Select tags"
+  />
+</div>
+
+
 
 const RecipeFeed = () => {
   const [recipes, setRecipes] = useState([]);
