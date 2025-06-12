@@ -1,4 +1,5 @@
 const express = require('express');
+
 const upload = require('../middleware/uploadMiddleware');
 const router = express.Router();
 const {
@@ -23,5 +24,10 @@ router.get('/:id', getRecipeById);
 router.post('/', protect, createRecipe);
 router.put('/:id', protect, updateRecipe);
 router.delete('/:id', protect, deleteRecipe);
+
+router.post('/:id/save', protect, saveRecipe);
+router.post('/:id/unsave', protect, unsaveRecipe);
+router.post('/:id/comment', protect, addComment);
+
 
 module.exports = router;
