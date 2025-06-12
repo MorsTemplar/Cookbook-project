@@ -95,6 +95,48 @@ const deleteRecipe = async (req, res) => {
   res.json({ message: 'Recipe removed' });
 };
 
+// Save a recipe
+const saveRecipe = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user._id);
+  const recipeId = req.params.id;
+
+  if (user.savedRecipes.includes(recipeId)) {
+    return res.status(400).json({ message: 'Recipe already saved' });
+  }
+
+  user.savedRecipes.push(recipeId);
+  await user.save();
+  res.json({ message: 'Recipe saved' });
+});
+
+// Unsave a recipe
+const unsaveRecipe = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user._id);
+  const recipeId = req.params.id;
+
+  user.savedRecipes = user.savedRecipes.filter(
+    (id) => id.toString() !== recipeId
+  );
+  await user.save();
+  res.json({ message: 'Recipe unsaved' });
+});
+
+// Comment on a recipe
+const addComment = asyncHandler(async (req, res) => {
+  const { text } = req.body;
+  const recipe = await Recipe.findById(req.params.id);
+
+  if (!recipe) {
+    res.status(404);
+    throw new Error('Recipe not found');
+  }
+
+  recipe.comments.push({ user: req.user._id, text });
+  await recipe.save();
+  res.json({ message: 'Comment added' });
+});
+
+
 module.exports = {
   createRecipe,
   getAllRecipes,
