@@ -1,10 +1,11 @@
 const Recipe = require('../models/Recipe');
-const mongoose = require('mongoose');
+const User = require('../models/User');
+const asyncHandler = require('express-async-handler');
 
 // @desc    Create new recipe
 // @route   POST /api/recipes
 // @access  Private
-const createRecipe = async (req, res) => {
+const createRecipe = asyncHandler(async (req, res) => {
   const { title, ingredients, steps, tags, imageUrl } = req.body;
 
   if (!title || !ingredients || !steps) {
@@ -23,35 +24,35 @@ const createRecipe = async (req, res) => {
 
   const savedRecipe = await recipe.save();
   res.status(201).json(savedRecipe);
-};
+});
 
 // @desc    Get all recipes or filter by tags
 // @route   GET /api/recipes
 // @access  Public
-const getAllRecipes = async (req, res) => {
+const getAllRecipes = asyncHandler(async (req, res) => {
   const { tag } = req.query;
   const filter = tag ? { tags: tag } : {};
 
   const recipes = await Recipe.find(filter).populate('author', 'username');
   res.json(recipes);
-};
+});
 
 // @desc    Get single recipe
 // @route   GET /api/recipes/:id
 // @access  Public
-const getRecipeById = async (req, res) => {
+const getRecipeById = asyncHandler(async (req, res) => {
   const recipe = await Recipe.findById(req.params.id).populate('author', 'username');
   if (!recipe) {
     res.status(404);
     throw new Error('Recipe not found');
   }
   res.json(recipe);
-};
+});
 
 // @desc    Update recipe
 // @route   PUT /api/recipes/:id
 // @access  Private (only author)
-const updateRecipe = async (req, res) => {
+const updateRecipe = asyncHandler(async (req, res) => {
   const recipe = await Recipe.findById(req.params.id);
 
   if (!recipe) {
@@ -73,12 +74,12 @@ const updateRecipe = async (req, res) => {
 
   const updated = await recipe.save();
   res.json(updated);
-};
+});
 
 // @desc    Delete recipe
 // @route   DELETE /api/recipes/:id
 // @access  Private (only author)
-const deleteRecipe = async (req, res) => {
+const deleteRecipe = asyncHandler(async (req, res) => {
   const recipe = await Recipe.findById(req.params.id);
 
   if (!recipe) {
@@ -93,9 +94,11 @@ const deleteRecipe = async (req, res) => {
 
   await recipe.remove();
   res.json({ message: 'Recipe removed' });
-};
+});
 
-// Save a recipe
+// @desc    Save a recipe
+// @route   POST /api/recipes/:id/save
+// @access  Private
 const saveRecipe = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user._id);
   const recipeId = req.params.id;
@@ -109,7 +112,9 @@ const saveRecipe = asyncHandler(async (req, res) => {
   res.json({ message: 'Recipe saved' });
 });
 
-// Unsave a recipe
+// @desc    Unsave a recipe
+// @route   DELETE /api/recipes/:id/save
+// @access  Private
 const unsaveRecipe = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user._id);
   const recipeId = req.params.id;
@@ -121,7 +126,9 @@ const unsaveRecipe = asyncHandler(async (req, res) => {
   res.json({ message: 'Recipe unsaved' });
 });
 
-// Comment on a recipe
+// @desc    Comment on a recipe
+// @route   POST /api/recipes/:id/comments
+// @access  Private
 const addComment = asyncHandler(async (req, res) => {
   const { text } = req.body;
   const recipe = await Recipe.findById(req.params.id);
@@ -136,10 +143,9 @@ const addComment = asyncHandler(async (req, res) => {
   res.json({ message: 'Comment added' });
 });
 
-
 module.exports = {
   createRecipe,
-  getRecipes,
+  getAllRecipes,
   getRecipeById,
   updateRecipe,
   deleteRecipe,
@@ -147,4 +153,3 @@ module.exports = {
   unsaveRecipe,
   addComment,
 };
-
